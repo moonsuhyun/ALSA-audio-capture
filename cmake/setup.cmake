@@ -1,3 +1,6 @@
+
+link_libraries      (/usr/lib/x86_64-linux-gnu/libasound.so)
+
 message             ("Downloading and extracting ALSA headers...")
 
 if    (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/lib/alsa-lib)

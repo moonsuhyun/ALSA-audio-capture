@@ -1,5 +1,5 @@
-#ifndef __SRC_INPUTAUDIO_HPP__
-#define __SRC_INPUTAUDIO_HPP__
+#ifndef __SRC_AUDIOCAPTURE_HPP__
+#define __SRC_AUDIOCAPTURE_HPP__
 
 #include <asoundlib.h>
 #include <string>
@@ -23,20 +23,22 @@ typedef struct Config {
     uint32_t sec;
 } Config_t;
 
-class InputAudio {
+class AudioCapture {
 private:
     Config_t cfg;
     snd_pcm_t* pcm;
     snd_pcm_hw_params_t* hw;
     std::vector<int16_t> buffer;
+    std::vector<std::vector<int16_t>> input;
+    int32_t offset;
     int32_t pcmInit(void);
     int32_t pcmPrepare(void);
     int32_t pcmCleanup(void);
     static std::atomic<bool> run;
 public:
-    InputAudio(void) : InputAudio("hw:0,0", 48000, 1, SND_PCM_FORMAT_S16_LE, 30) {}
-    InputAudio(std::string device, uint32_t rate, uint32_t channel, snd_pcm_format_t format, uint32_t sec);
+    AudioCapture(void) : AudioCapture("default", 48000, 1, SND_PCM_FORMAT_S16_LE, 30) {}
+    AudioCapture(std::string device, uint32_t rate, uint32_t channel, snd_pcm_format_t format, uint32_t sec);
     void Capture(void);
 };
 
-#endif /* SRC_INPUTAUDIO_HPP */
+#endif /* SRC_AUDIOCAPTURE_HPP */
