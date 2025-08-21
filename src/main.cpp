@@ -1,7 +1,10 @@
 #include <iostream>
-#include <asoundlib.h>
+#include "AudioCapture.hpp"
 
 int main() {
-    std::cout << "Hello world" << std::endl;
+    AudioCapture ac = AudioCapture();
+
+    ac.Capture();
+
     return 0;
 }

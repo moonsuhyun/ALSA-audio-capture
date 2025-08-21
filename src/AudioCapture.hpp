@@ -1,7 +1,7 @@
 #ifndef __SRC_AUDIOCAPTURE_HPP__
 #define __SRC_AUDIOCAPTURE_HPP__
 
-#include <asoundlib.h>
+#include <alsa/asoundlib.h>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -36,7 +36,7 @@ private:
     int32_t pcmCleanup(void);
     static std::atomic<bool> run;
 public:
-    AudioCapture(void) : AudioCapture("default", 48000, 1, SND_PCM_FORMAT_S16_LE, 30) {}
+    AudioCapture(void) : AudioCapture("default", 48000, 1, SND_PCM_FORMAT_S16_LE, 5) {}
     AudioCapture(std::string device, uint32_t rate, uint32_t channel, snd_pcm_format_t format, uint32_t sec);
     void Capture(void);
 };

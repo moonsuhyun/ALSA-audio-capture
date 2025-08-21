@@ -3,7 +3,7 @@
 std::atomic<bool> AudioCapture::run(true);
 
 AudioCapture::AudioCapture(std::string device, uint32_t rate, uint32_t channel, snd_pcm_format_t format, uint32_t sec)
-    : cfg{device, rate, channel, format, sec}, buffer(rate * sec, 0) {
+    : cfg{device, rate, channel, format, sec}, buffer(rate * sec * 2, 0) {
     pcm = nullptr;
     hw = nullptr;
     offset = 0;
@@ -59,6 +59,7 @@ int32_t AudioCapture::pcmCleanup(void) {
 }
 
 void AudioCapture::Capture(void) {
+    std::cout << "Capture start..." << std::endl;
     int32_t rc;
     AudioCapture::run = true;
     int32_t buffer_size = cfg.rate * cfg.sec * 2;
@@ -71,8 +72,9 @@ void AudioCapture::Capture(void) {
         ThrowUnderZero(rc, pcmPrepare());
 
         while (AudioCapture::run) {
+            std::cout << offset%buffer_size << std::endl;
             if (buffer_area_flag ^ (offset % buffer_size < cfg.rate * cfg.sec)) {
-                auto ret = snd_pcm_readi(pcm, &buffer[offset % buffer_size], cfg.rate);
+                auto ret = snd_pcm_readi(pcm, &buffer[offset % buffer_size], cfg.rate * cfg.sec);
                 if (ret < 0) {
                     if (ret == -EPIPE) pcmPrepare();
                     continue;
@@ -101,6 +103,8 @@ void AudioCapture::Capture(void) {
         input.emplace_back(first, last);
 
         pcmCleanup();
+
+        std::cout << "Capture finished." << std::endl;
 
     } catch (std::string code) {
         std::cerr << "Capture failed: cannot execute " << code << std::endl;

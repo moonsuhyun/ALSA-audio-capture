@@ -15,4 +15,4 @@ if    (NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/lib/alsa-lib)
 
 endif ()
 
-include_directories (${CMAKE_CURRENT_SOURCE_DIR}/lib/alsa-lib/include)
+# include_directories (${CMAKE_CURRENT_SOURCE_DIR}/lib/alsa-lib/include)
