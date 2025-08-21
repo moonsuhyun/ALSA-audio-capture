@@ -3,10 +3,9 @@
 std::atomic<bool> AudioCapture::run(true);
 
 AudioCapture::AudioCapture(std::string device, uint32_t rate, uint32_t channel, snd_pcm_format_t format, uint32_t sec)
-    : cfg{device, rate, channel, format, sec}, buffer(rate * sec * 2, 0) {
+    : cfg{device, rate, channel, format, sec} {
     pcm = nullptr;
     hw = nullptr;
-    offset = 0;
 }
 
 int32_t AudioCapture::pcmInit(void) {
@@ -58,12 +57,14 @@ int32_t AudioCapture::pcmCleanup(void) {
     return 0;
 }
 
-void AudioCapture::Capture(void) {
+std::vector<std::vector<int16_t>>& AudioCapture::Capture(void) {
     std::cout << "Capture start..." << std::endl;
     int32_t rc;
+    int32_t offset = 0;
     AudioCapture::run = true;
-    int32_t buffer_size = cfg.rate * cfg.sec * 2;
-    bool buffer_area_flag = false; // false: 0~29s, true: 30~59s
+    int32_t buffer_size = cfg.rate * cfg.sec;
+    std::vector<int16_t> buffer(buffer_size);
+    std::vector<int16_t> temp_buffer(cfg.rate, 0);
 
     std::signal(SIGINT, [](int) -> void { AudioCapture::run = false; });
 
@@ -72,35 +73,27 @@ void AudioCapture::Capture(void) {
         ThrowUnderZero(rc, pcmPrepare());
 
         while (AudioCapture::run) {
-            std::cout << offset%buffer_size << std::endl;
-            if (buffer_area_flag ^ (offset % buffer_size < cfg.rate * cfg.sec)) {
-                auto ret = snd_pcm_readi(pcm, &buffer[offset % buffer_size], cfg.rate * cfg.sec);
-                if (ret < 0) {
-                    if (ret == -EPIPE) pcmPrepare();
-                    continue;
-                }
-                offset += ret;
-            } else {
-                auto half = buffer.begin() + cfg.rate * cfg.sec;
+            std::cout << offset << std::endl;
+            auto ret = snd_pcm_readi(pcm, temp_buffer.data(), cfg.rate);
 
-                auto first = !buffer_area_flag ? buffer.begin() : half;
-                auto last = !buffer_area_flag ? half : buffer.end();
+            if (ret < 0) {
+                if (ret == -EPIPE) pcmPrepare();
+                std::cout << "Broken pipe" << std::endl;
+                continue;
+            }
 
-                input.emplace_back(first, last);
-                
-                std::fill(first, last, 0);
+            std::copy(temp_buffer.begin(), temp_buffer.begin() + ret, buffer.begin() + offset);
+            offset += cfg.rate;
 
-                buffer_area_flag = !buffer_area_flag;
+            if (offset == buffer_size) {
+                input.emplace_back(buffer.begin(), buffer.end());
+                offset = 0;
             }
         }
 
-        std::cout << "SIGINT: Audio capture aborted." << std::endl;
-        auto half = buffer.begin() + cfg.rate * cfg.sec;
+        std::cout << "SIGINT: Capture aborted." << std::endl;
 
-        auto first = !buffer_area_flag ? buffer.begin() : half;
-        auto last = !buffer_area_flag ? half : buffer.end();
-
-        input.emplace_back(first, last);
+        if (offset > 0) input.emplace_back(buffer.begin(), buffer.begin() + offset);
 
         pcmCleanup();
 
@@ -108,6 +101,7 @@ void AudioCapture::Capture(void) {
 
     } catch (std::string code) {
         std::cerr << "Capture failed: cannot execute " << code << std::endl;
-        return;
     }
+    
+    return input;
 }

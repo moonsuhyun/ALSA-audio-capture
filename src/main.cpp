@@ -4,7 +4,7 @@
 int main() {
     AudioCapture ac = AudioCapture();
 
-    ac.Capture();
+    auto input = ac.Capture();
 
     return 0;
 }

@@ -28,17 +28,15 @@ private:
     Config_t cfg;
     snd_pcm_t* pcm;
     snd_pcm_hw_params_t* hw;
-    std::vector<int16_t> buffer;
     std::vector<std::vector<int16_t>> input;
-    int32_t offset;
     int32_t pcmInit(void);
     int32_t pcmPrepare(void);
     int32_t pcmCleanup(void);
     static std::atomic<bool> run;
 public:
-    AudioCapture(void) : AudioCapture("default", 48000, 1, SND_PCM_FORMAT_S16_LE, 5) {}
+    AudioCapture(void) : AudioCapture("default", 48000, 1, SND_PCM_FORMAT_S16_LE, 30) {}
     AudioCapture(std::string device, uint32_t rate, uint32_t channel, snd_pcm_format_t format, uint32_t sec);
-    void Capture(void);
+    std::vector<std::vector<int16_t>>& Capture(void);
 };
 
 #endif /* SRC_AUDIOCAPTURE_HPP */
