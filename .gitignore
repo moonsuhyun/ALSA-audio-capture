@@ -13,6 +13,7 @@ out
 aarch64le-debug
 x86_64
 build
+cmake-build-debug
 package
 docs
 version.py

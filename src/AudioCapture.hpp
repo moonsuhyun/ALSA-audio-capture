@@ -21,6 +21,7 @@ typedef struct Config {
     uint32_t channels;
     snd_pcm_format_t format;
     uint32_t sec;
+    snd_pcm_uframes_t period;
 } Config_t;
 
 class AudioCapture {
