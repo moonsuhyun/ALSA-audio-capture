@@ -4,6 +4,7 @@
 .settings
 .vscode
 .ipynb_checkpoints
+.idea
 
 **/compile_commands.json
 
