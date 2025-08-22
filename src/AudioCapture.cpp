@@ -72,12 +72,12 @@ std::vector<std::vector<int16_t>> &AudioCapture::Capture(void) {
         int32_t count = 0;
         int32_t offset = 0;
         AudioCapture::run = true;
-        int32_t buffer_size = cfg.rate * cfg.sec;
+        int32_t buffer_size = cfg.rate * cfg.sec * cfg.channels;
         std::vector<int16_t> buffer(buffer_size, 0);
         std::vector<int16_t> temp_buffer(cfg.period, 0);
 
         while (AudioCapture::run) {
-            std::cout << "\rAudio #" << count << ": " << offset / cfg.rate << "/" << cfg.sec << "sec" << std::flush;
+            std::cout << "\rAudio #" << count << ": " << offset / cfg.rate / cfg.channels << "/" << cfg.sec << "sec" << std::flush;
             auto ret = snd_pcm_readi(pcm, temp_buffer.data(), cfg.period);
 
             if (ret < 0)  {
@@ -91,7 +91,7 @@ std::vector<std::vector<int16_t>> &AudioCapture::Capture(void) {
             if (offset + ret > buffer_size) {
                 std::fill(buffer.begin() + offset, buffer.end(), 0);
                 input.emplace_back(buffer.begin(), buffer.end());
-                std::cout << "\rAudio #" << count++ << ": " << "30" << "/" << cfg.sec << "sec" << std::endl;
+                std::cout << "\rAudio #" << count++ << ": " << cfg.sec << "/" << cfg.sec << "sec" << std::endl;
                 offset = 0;
             }
 
